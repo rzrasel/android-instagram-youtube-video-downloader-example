@@ -1,3 +1,14 @@
+# Instagram And YouTube Video Downloader
+
+A modern Android application built with Jetpack Compose that allows users to download videos from Instagram and YouTube by simply entering the post URL. The app follows clean architecture principles and uses the latest Android development tools.
+
+## 📁 Project Directory Overview
+
+- Instagram Video Downloader - project directory:
+  - [instagram-video-downloader](instagram-video-downloader)
+- YouTube Video Downloader - project directory:
+   - [youtube-video-downloader](youtube-video-downloader)
+
 # Instagram Video Downloader
 
 A modern Android application to download Instagram videos directly to your device. Built with Jetpack Compose, Retrofit, and Hilt for dependency injection.
@@ -41,6 +52,8 @@ The app handles permission requests automatically when needed.
    ```bash
    git clone https://github.com/rzrasel/android-instagram-youtube-video-downloader-example.git
 
+## 🎥 Screen Record Video Link
+
 <video src="https://github.com/rzrasel/android-instagram-youtube-video-downloader-example/blob/master/resource/instagram-video-downloader-20250426_165630.mp4" controls width="500"></video>
 
 [🎥 Instagram Video Downloader](https://github.com/rzrasel/android-instagram-youtube-video-downloader-example/blob/master/resource/instagram-video-downloader-20250426_165630.mp4)
@@ -82,5 +95,7 @@ The app handles permission requests automatically when needed.
    git clone https://github.com/rzrasel/android-instagram-youtube-video-downloader-example.git
 
 <video src="https://github.com/rzrasel/android-instagram-youtube-video-downloader-example/blob/master/resource/youtube-video-downloader-20250426_010244.mp4" controls width="500"></video>
+
+## ▶️ Screen Record Video Link
 
 [▶️ YouTube Video Downloader](https://github.com/rzrasel/android-instagram-youtube-video-downloader-example/blob/master/resource/youtube-video-downloader-20250426_010244.mp4)
