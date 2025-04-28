@@ -3,27 +3,47 @@ package com.rzrasel.instagramvideodownload.core
 import android.content.ContentValues
 import android.content.Context
 import android.os.Build
+import android.os.Environment
 import android.provider.MediaStore
-import com.rzrasel.instagramvideodownload.instagramdownloader.domain.state.SaveState
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.OutputStream
 import javax.inject.Inject
 
 class SaveVideoToStorage @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
-    fun save(videoBytes: ByteArray, fileName: String): SaveState {
+    fun save(videoBytes: ByteArray, fileName: String): SaveResult {
+        if (videoBytes.isEmpty()) {
+            return SaveResult.Error("Video data is empty")
+        }
+
+        if (videoBytes.size > Constants.MAX_VIDEO_SIZE_BYTES) {
+            return SaveResult.Error("Video file is too large")
+        }
+
         val contentValues = createContentValues(fileName)
         val collection = getMediaCollectionUri()
 
         val uri = context.contentResolver.insert(collection, contentValues)
-            ?: return SaveState.Error("Failed to create MediaStore record")
+            ?: return SaveResult.Error("Failed to create MediaStore record")
 
         return try {
-            writeVideoToUri(context, uri, videoBytes, contentValues)
-            SaveState.Success("Video saved as $fileName")
+            context.contentResolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(videoBytes)
+                outputStream.flush()
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    contentValues.clear()
+                    contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
+                    context.contentResolver.update(uri, contentValues, null, null)
+                }
+
+                SaveResult.Success("Video saved as $fileName")
+            } ?: SaveResult.Error("Failed to open output stream")
         } catch (e: Exception) {
-            cleanupOnError(context, uri)
-            SaveState.Error(e.message ?: "Failed to save video")
+            cleanupOnError(uri)
+            SaveResult.Error(e.message ?: "Failed to save video")
         }
     }
 
@@ -31,6 +51,8 @@ class SaveVideoToStorage @Inject constructor(
         return ContentValues().apply {
             put(MediaStore.Video.Media.DISPLAY_NAME, fileName)
             put(MediaStore.Video.Media.MIME_TYPE, "video/mp4")
+            put(MediaStore.Video.Media.RELATIVE_PATH,
+                Environment.DIRECTORY_MOVIES + "/InstagramDownloads")
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 put(MediaStore.Video.Media.IS_PENDING, 1)
             }
@@ -43,28 +65,16 @@ class SaveVideoToStorage @Inject constructor(
         MediaStore.Video.Media.EXTERNAL_CONTENT_URI
     }
 
-    private fun writeVideoToUri(
-        context: Context,
-        uri: android.net.Uri,
-        videoBytes: ByteArray,
-        contentValues: ContentValues
-    ) {
-        context.contentResolver.openOutputStream(uri)?.use { outputStream ->
-            outputStream.write(videoBytes)
-        } ?: throw Exception("Failed to open output stream")
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            contentValues.clear()
-            contentValues.put(MediaStore.Video.Media.IS_PENDING, 0)
-            context.contentResolver.update(uri, contentValues, null, null)
-        }
-    }
-
-    private fun cleanupOnError(context: Context, uri: android.net.Uri) {
+    private fun cleanupOnError(uri: android.net.Uri) {
         try {
             context.contentResolver.delete(uri, null, null)
         } catch (e: Exception) {
-            // Log error if needed
+            Log.e("SaveVideoToStorage", "Error cleaning up failed save", e)
         }
+    }
+
+    sealed class SaveResult {
+        data class Success(val message: String) : SaveResult()
+        data class Error(val message: String) : SaveResult()
     }
 }

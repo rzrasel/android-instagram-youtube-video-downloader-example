@@ -10,14 +10,17 @@ import retrofit2.http.Url
 interface InstagramApiService {
     @GET
     @Headers(
-        "User-Agent: Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36",
-        "Accept-Language: en-US,en;q=0.9",
-        "Referer: https://www.instagram.com/",
-        "X-Requested-With: XMLHttpRequest"
+        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+        "Accept-Language: en-US,en;q=0.5",
+        "Cache-Control: no-cache"
     )
     suspend fun fetchInstagramPage(@Url url: String): Response<ResponseBody>
 
     @GET
     @Streaming
+    @Headers(
+        "Accept: */*",
+        "Referer: https://www.instagram.com/"
+    )
     suspend fun downloadVideo(@Url videoUrl: String): Response<ResponseBody>
 }

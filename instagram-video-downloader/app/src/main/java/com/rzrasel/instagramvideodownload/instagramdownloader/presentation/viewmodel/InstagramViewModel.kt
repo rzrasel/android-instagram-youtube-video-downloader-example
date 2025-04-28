@@ -21,10 +21,13 @@ class InstagramViewModel @Inject constructor(
     fun downloadVideo(url: String) {
         viewModelScope.launch {
             _uiState.value = InstagramUiState.Loading
-            _uiState.value = when (val result = downloadUseCase(url)) {
-                is DownloadState.Success -> InstagramUiState.DownloadSuccess(result.message)
-                is DownloadState.Error -> InstagramUiState.DownloadError(result.message)
-                DownloadState.Loading -> InstagramUiState.Loading
+            when (val result = downloadUseCase(url)) {
+                is DownloadState.Success -> {
+                    _uiState.value = InstagramUiState.Success(result.message)
+                }
+                is DownloadState.Error -> {
+                    _uiState.value = InstagramUiState.Error(result.message, result.type)
+                }
             }
         }
     }

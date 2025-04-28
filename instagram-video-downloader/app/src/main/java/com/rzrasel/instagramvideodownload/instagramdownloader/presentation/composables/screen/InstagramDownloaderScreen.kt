@@ -1,6 +1,12 @@
 package com.rzrasel.instagramvideodownload.instagramdownloader.presentation.composables.screen
 
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.rzrasel.instagramvideodownload.instagramdownloader.presentation.composables.components.UrlInputSection
 import com.rzrasel.instagramvideodownload.instagramdownloader.presentation.viewmodel.InstagramViewModel
@@ -8,12 +14,32 @@ import com.rzrasel.instagramvideodownload.instagramdownloader.presentation.viewm
 @Composable
 fun InstagramDownloaderScreen(
     hasStoragePermission: Boolean,
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
+    viewModel: InstagramViewModel = hiltViewModel()
 ) {
-    val viewModel: InstagramViewModel = hiltViewModel()
-    UrlInputSection(
-        viewModel = viewModel,
-        hasStoragePermission = hasStoragePermission,
-        onRequestPermission = onRequestPermission
-    )
+    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsState()
+
+    Scaffold { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            UrlInputSection(
+                uiState = uiState,
+                hasStoragePermission = hasStoragePermission,
+                onDownloadClick = { url ->
+                    if (hasStoragePermission) {
+                        viewModel.downloadVideo(url)
+                    } else {
+                        onRequestPermission()
+                    }
+                }
+            )
+        }
+    }
 }

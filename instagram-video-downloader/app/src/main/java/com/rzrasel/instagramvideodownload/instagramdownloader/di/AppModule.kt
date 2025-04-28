@@ -1,8 +1,8 @@
 package com.rzrasel.instagramvideodownload.instagramdownloader.di
 
 import android.content.Context
+import com.rzrasel.instagramvideodownload.core.BlobVideoDownloader
 import com.rzrasel.instagramvideodownload.core.InstagramScraper
-import com.rzrasel.instagramvideodownload.core.InstagramUtils
 import com.rzrasel.instagramvideodownload.core.SaveVideoToStorage
 import com.rzrasel.instagramvideodownload.instagramdownloader.data.datasource.InstagramRemoteDataSource
 import com.rzrasel.instagramvideodownload.instagramdownloader.data.repository.InstagramRepositoryImpl
@@ -26,22 +26,29 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideInstagramUtils(): InstagramUtils = InstagramUtils
-
-    @Provides
-    @Singleton
     fun provideSaveVideoToStorage(
         @ApplicationContext context: Context
     ): SaveVideoToStorage = SaveVideoToStorage(context)
 
     @Provides
     @Singleton
+    fun provideBlobVideoDownloader(
+        @ApplicationContext context: Context
+    ): BlobVideoDownloader = BlobVideoDownloader(context)
+
+    @Provides
+    @Singleton
     fun provideInstagramRepository(
-        @ApplicationContext context: Context,
         remoteDataSource: InstagramRemoteDataSource,
         scraper: InstagramScraper,
-        videoSaver: SaveVideoToStorage
+        videoSaver: SaveVideoToStorage,
+        blobDownloader: BlobVideoDownloader
     ): InstagramRepository {
-        return InstagramRepositoryImpl(context, remoteDataSource, scraper, videoSaver)
+        return InstagramRepositoryImpl(
+            remoteDataSource,
+            scraper,
+            videoSaver,
+            blobDownloader
+        )
     }
 }

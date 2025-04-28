@@ -13,9 +13,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import com.rzrasel.instagramvideodownload.instagramdownloader.presentation.composables.screen.InstagramDownloaderScreen
 import com.rzrasel.instagramvideodownload.ui.theme.InstagramVideoDownloadTheme
@@ -23,26 +21,22 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val requestPermissionLauncher = registerForActivityResult(
+    private var hasStoragePermission by mutableStateOf(false)
+
+    private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
         hasStoragePermission = isGranted
-        if (!isGranted) showPermissionDeniedMessage()
     }
-
-    private var hasStoragePermission by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         checkStoragePermission()
 
         setContent {
-            val context = LocalContext.current
-            val currentPermission by remember { mutableStateOf(hasStoragePermission) }
-
             InstagramVideoDownloadTheme {
                 InstagramDownloaderScreen(
-                    hasStoragePermission = currentPermission,
+                    hasStoragePermission = hasStoragePermission,
                     onRequestPermission = ::requestStoragePermission
                 )
             }
@@ -71,11 +65,7 @@ class MainActivity : ComponentActivity() {
                 startActivity(intent)
             }
         } else {
-            requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
-    }
-
-    private fun showPermissionDeniedMessage() {
-        // Show a snackbar or toast if needed
     }
 }
